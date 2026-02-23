@@ -1,21 +1,56 @@
 # 📟 Pico-Dashboard IoT
 
-Système de contrôle embarqué haute densité basé sur **Raspberry Pi Pico W**, conçu pour le pilotage d'interface physique avec retour visuel et mécanique.
+[![MicroPython](https://img.shields.io/badge/MicroPython-v1.20+-blue.svg)](https://micropython.org)
+[![Hardware](https://img.shields.io/badge/Hardware-Pico%20W-orange.svg)](https://www.raspberrypi.com)
+
+## 📝 Description du Projet
+Le **Pico-Dashboard IoT** est une interface de contrôle physique polyvalente conçue pour centraliser les interactions domotiques ou industrielles. Ce projet combine électronique de précision, développement MicroPython et design mécanique 3D.
+
+L'objectif est de créer un boîtier autonome capable de gérer :
+* **Saisie utilisateur massive :** 18 boutons poussoirs pour un contrôle direct et instantané.
+* **Retour visuel dynamique :** Un écran TFT pour l'affichage de télémétrie, de menus ou d'états système.
+* **Action mécanique :** Un servomoteur intégré permettant un retour physique (type indicateur à aiguille ou verrouillage).
+
+Grâce au **Wi-Fi intégré** du Raspberry Pi Pico W, chaque interaction peut être synchronisée avec un serveur distant via MQTT ou des API HTTP, transformant ce boîtier en un véritable nœud de contrôle IoT.
 
 ---
 
-## 🛠 Spécifications du Projet
+## 🛠 Spécifications Techniques
 
-Ce dashboard centralise la gestion de 18 entrées numériques, un affichage LCD et un asservissement mécanique.
+### 🧠 Cœur & Connectivité
+* **Microcontrôleur :** Raspberry Pi Pico W (RP2040 Dual-core).
+* **Réseau :** Wi-Fi 2.4GHz intégré pour le pilotage à distance.
 
-### 🧠 Cœur du Système
-* **Microcontrôleur :** Raspberry Pi Pico W (RP2040).
-* **Connectivité :** Wi-Fi 2.4GHz intégré pour télémétrie et contrôle distant.
-
-### 🖥 Interface & Sorties
-* **Écran :** LCD TFT 1.44" (Driver `ST7735`, protocole SPI).
+### 🖥 Périphériques
+* **Affichage :** LCD TFT 1.44" (Driver `ST7735`, protocole SPI).
 * **Actionneur :** 1x Servomoteur SG90 (Pilotage via PWM).
+* **Entrées :** 18 boutons poussoirs configurés avec Pull-up interne.
 
-### ⌨️ Entrées Utilisateur
-* **Matrice :** 18 boutons poussoirs configurés en entrées digitales.
-* **Gestion :** Résistances de Pull-up internes activées pour minimiser le câblage.
+---
+
+## 🔌 Branchements (Pinout)
+
+
+
+| Composant | Pin Pico (GPIO) | Fonction |
+| :--- | :--- | :--- |
+| **Écran (SCL/SDA)** | GP18 / GP19 | Bus SPI |
+| **Écran (DC/RES/CS)**| GP17 / GP20 / GP16 | Signal de contrôle |
+| **Servomoteur** | GP15 | Signal PWM |
+| **Boutons** | GP0 à GP14 + GP21/22/26 | Entrées Digitales |
+
+---
+
+## 🚀 Installation & Déploiement
+
+1.  **Firmware :** Installez le dernier firmware [MicroPython](https://micropython.org/download/RPI_PICO_W/) sur votre Pico W.
+2.  **Upload :** Transférez vos fichiers Python (drivers et main) via Thonny ou `mpremote`.
+3.  **Validation :** Utilisez des scripts de test unitaires pour vérifier chaque composant (écran, servo, boutons) avant l'assemblage final.
+
+---
+
+## 📐 Conception 3D
+Le boîtier est optimisé pour l'impression **FDM** (PLA ou PETG) :
+* **Infill :** 15-20% pour un bon compromis poids/solidité.
+* **Montage :** Emplacements boutons prévus pour un montage "press-fit".
+* **Ergonomie :** Façade inclinée à 15° pour faciliter la lecture de l'écran et l'accès aux boutons.
