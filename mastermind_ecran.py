@@ -10,9 +10,9 @@ DOOR = color565(90, 55, 35)
 DOOR_LINE = color565(60, 40, 25)
 SLOT_BORDER = color565(100, 100, 130)
 SLOT_EMPTY = color565(40, 40, 60)
-FEEDBACK_GOOD = color565(0, 255, 100)   # vert = bon emplacement
-FEEDBACK_WRONG = color565(255, 220, 0)  # jaune = type présent mais mal placé
-FEEDBACK_BAD = color565(220, 60, 50)    # rouge = type pas dans la séquence
+FEEDBACK_GOOD = color565(0, 255, 100)   
+FEEDBACK_WRONG = color565(255, 220, 0)  
+FEEDBACK_BAD = color565(244, 67, 50)   
 TITLE = color565(180, 180, 220)
 SUCCESS_GOLD = color565(255, 215, 0)
 
@@ -83,20 +83,16 @@ def _feedback_color(fb):
     return FEEDBACK_BAD
 
 
-def draw_history(tft, history, type_colors):
-    """
-    Affiche les derniers essais (mini lignes : 4 couleurs + pastilles vert/jaune/rouge par emplacement).
-    history: liste de (guess, feedback_peg), feedback_peg = [0,1,2,0] par position.
-    """
-    row_h = 6
-    box_size = 5
-    gap = 1
-    y_start = 62
-    dot = 3
-    for row_idx, (g, feedback_peg) in enumerate(history[-4:]):
-        y = y_start + row_idx * (row_h + 1)
+# Historique : 5 essais à gauche, 5 à droite (carrés réduits pour tenir sur les côtés)
+HISTORY_LEFT_ROWS = 5
+HISTORY_RIGHT_ROWS = 5
+
+def _draw_history_column(tft, rows, type_colors, x_start, y_start, row_h, row_margin, box_size, box_gap, dot):
+    """Dessine une colonne d'historique (5 lignes max)."""
+    for row_idx, (g, feedback_peg) in enumerate(rows):
+        y = y_start + row_idx * (row_h + row_margin)
         for i in range(4):
-            x = 8 + i * (box_size + gap)
+            x = x_start + i * (box_size + box_gap)
             if g[i] is not None and g[i] < len(type_colors):
                 c = type_colors[g[i]]
                 if isinstance(c, (list, tuple)):
@@ -106,11 +102,32 @@ def draw_history(tft, history, type_colors):
                 tft.fill_rect(x, y, box_size, row_h, col)
             else:
                 tft.fill_rect(x, y, box_size, row_h, SLOT_EMPTY)
-        x_dots = 8 + 4 * (box_size + gap) + 2
+        x_dots = x_start + 4 * (box_size + box_gap) + box_gap
         for i in range(4):
             xx = x_dots + i * (dot + 1)
             fb = feedback_peg[i] if i < len(feedback_peg) else 0
             tft.fill_rect(xx, y + (row_h - dot) // 2, dot, dot, _feedback_color(fb))
+
+
+def draw_history(tft, history, type_colors):
+    """
+    Affiche 10 essais : 5 à gauche, 5 à droite.
+    Gauche = essais 1 à 5, droite = essais 6 à 10.
+    """
+    row_h = 6
+    row_margin = 2
+    box_size = 5
+    box_gap = 1
+    dot = 3
+    y_start = 62
+    last_10 = history[-10:]
+    left_rows = last_10[:5]
+    right_rows = last_10[5:]
+    col_width = 4 * (box_size + box_gap) + box_gap + 4 * (dot + 1)
+    x_left = 4
+    x_right = 128 - 4 - col_width
+    _draw_history_column(tft, left_rows, type_colors, x_left, y_start, row_h, row_margin, box_size, box_gap, dot)
+    _draw_history_column(tft, right_rows, type_colors, x_right, y_start, row_h, row_margin, box_size, box_gap, dot)
 
 
 def draw_feedback(tft, feedback_peg):
@@ -119,7 +136,8 @@ def draw_feedback(tft, feedback_peg):
     feedback_peg: liste de 4 (0=rouge, 1=jaune, 2=vert).
     """
     dot_size = 8
-    y = 92
+    # Sous l'historique (5 lignes × (6+2)px de chaque côté → jusqu'à y=102)
+    y = 106
     x_start = 28
     gap = 6
     for i in range(4):
