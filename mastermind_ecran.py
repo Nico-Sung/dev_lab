@@ -1,10 +1,8 @@
 # Écran Mastermind - Plateau Indigo / Porte de la Ligue Pokémon
-# Piliers, séquence à deviner, feedback, portes.
 
 from st7735 import color565
 
 
-# --- Couleurs thème Plateau Indigo ---
 INDIGO_BG = color565(25, 25, 65)
 PILLAR_OFF = color565(50, 50, 75)
 PILLAR_ON = color565(255, 200, 80)
@@ -28,7 +26,6 @@ def draw_pillars(tft, step_done):
     Dessine les 3 piliers du chemin (séquence d'arrivée).
     step_done: 0, 1, 2 ou 3 = nombre d'étapes réussies (piliers allumés).
     """
-    # 3 barres verticales en haut
     w, h = 32, 22
     gap = 6
     y = 6
@@ -45,13 +42,11 @@ def draw_door(tft, open_):
     door_h = 38
     y = 118
     if open_:
-        # Battants ouverts (écartés)
         tft.fill_rect(4, y, 28, door_h, DOOR)
         tft.fill_rect(4 + 28, y, 4, door_h, DOOR_LINE)
         tft.fill_rect(96, y, 28, door_h, DOOR)
         tft.fill_rect(96 - 4, y, 4, door_h, DOOR_LINE)
     else:
-        # Porte fermée (un seul bloc central)
         tft.fill_rect(24, y, 80, door_h, DOOR)
         tft.fill_rect(62, y, 4, door_h, DOOR_LINE)
 
@@ -66,7 +61,6 @@ def draw_guess_slots(tft, guess, type_colors, pool_count):
     y = 34
     for i in range(4):
         x = 8 + i * (slot_size + gap)
-        # Bordure
         tft.fill_rect(x - 1, y - 1, slot_size + 2, slot_size + 2, SLOT_BORDER)
         if guess[i] is not None and guess[i] < len(type_colors):
             c = type_colors[guess[i]]
@@ -103,7 +97,6 @@ def draw_step_indicator(tft, step, total, attempts_left):
     Indicateur d'étape et d'essais (visuel simple : barre ou pastilles).
     step: 1..total, attempts_left: essais restants.
     """
-    # Petites pastilles pour les essais (max 5)
     max_attempts = 5
     dot = 4
     y = 30
@@ -111,15 +104,15 @@ def draw_step_indicator(tft, step, total, attempts_left):
         x = 108 + (i % 2) * 6
         yy = y + (i // 2) * 6
         if i < (max_attempts - attempts_left):
-            tft.fill_rect(x, yy, dot, dot, FEEDBACK_WRONG)  # utilisé
+            tft.fill_rect(x, yy, dot, dot, FEEDBACK_WRONG) 
         else:
-            tft.fill_rect(x, yy, dot, dot, PILLAR_OFF)  # restant
+            tft.fill_rect(x, yy, dot, dot, PILLAR_OFF) 
 
 
 def draw_etape_screen(tft, step, total, guess, good_pos, wrong_pos, attempts_left, type_colors, pool_count):
     """Écran de jeu : piliers, slots, feedback, porte fermée."""
     draw_background(tft)
-    draw_pillars(tft, step - 1)  # étapes déjà gagnées
+    draw_pillars(tft, step - 1)  
     draw_guess_slots(tft, guess, type_colors, pool_count)
     draw_feedback(tft, good_pos, wrong_pos)
     draw_step_indicator(tft, step, total, attempts_left)
@@ -131,7 +124,6 @@ def draw_success_screen(tft):
     draw_background(tft)
     draw_pillars(tft, 3)
     draw_door(tft, True)
-    # Bandeau "récompense" (rectangle doré en bas)
     tft.fill_rect(10, 78, 108, 28, SUCCESS_GOLD)
     tft.fill_rect(14, 82, 100, 20, INDIGO_BG)
 
@@ -142,7 +134,6 @@ def draw_visual_mode(tft, frame, type_colors):
     frame: numéro d'animation (incrémenté à chaque appel).
     """
     draw_background(tft)
-    # Piliers en cycle (0, 1, 2, 3, 0, 1, 2, 3...)
     pillar_lit = frame % 4
     if pillar_lit < 3:
         draw_pillars(tft, pillar_lit + 1)
