@@ -28,15 +28,25 @@ SEQ_LEN = 4
 VISUAL_BUTTON = 17 
 
 
-def mastermind_feedback(secret, guess):
-    good = sum(1 for i in range(SEQ_LEN) if guess[i] == secret[i])
-    rest = [secret[i] for i in range(SEQ_LEN) if guess[i] != secret[i]]
-    wrong = 0
+# Feedback par emplacement : 0 = rouge (pas dans la séquence), 1 = jaune (mal placé), 2 = vert (bon emplacement)
+def mastermind_feedback_peg(secret, guess):
+    """Retourne une liste de 4 : 0=rouge, 1=jaune, 2=vert pour chaque position."""
+    used_secret = [False] * SEQ_LEN
+    used_guess = [False] * SEQ_LEN
+    feedback = [0] * SEQ_LEN
     for i in range(SEQ_LEN):
-        if guess[i] != secret[i] and guess[i] in rest:
-            wrong += 1
-            rest.remove(guess[i])
-    return good, wrong
+        if guess[i] == secret[i]:
+            feedback[i] = 2
+            used_secret[i] = used_guess[i] = True
+    for i in range(SEQ_LEN):
+        if used_guess[i]:
+            continue
+        for j in range(SEQ_LEN):
+            if not used_secret[j] and secret[j] == guess[i]:
+                feedback[i] = 1
+                used_secret[j] = True
+                break
+    return feedback
 
 
 def new_secret(pool_size):
@@ -55,7 +65,8 @@ secret = []
 guess = [None, None, None, None]
 current_slot = 0
 attempts_left = MAX_ATTEMPTS
-last_good, last_wrong = 0, 0
+last_feedback = [0, 0, 0, 0]  # 0=rouge, 1=jaune, 2=vert par emplacement
+history = []  # liste des (guess, feedback_peg) des derniers essais
 visual_frame = 0
 long_press_threshold = 1.2 
 
@@ -112,8 +123,9 @@ while True:
             guess = [btn, None, None, None]
             current_slot = 1
             attempts_left = MAX_ATTEMPTS
-            last_good, last_wrong = 0, 0
-            draw_etape_screen(tft, step, 3, guess, 0, 0, attempts_left, type_colors, pool_size)
+            last_feedback = [0, 0, 0, 0]
+            history = []
+            draw_etape_screen(tft, step, 3, guess, last_feedback, attempts_left, type_colors, pool_size, history)
             print("Étape 1/3 - Slot 1: %s" % button_types[btn])
         time.sleep(0.02)
         continue
@@ -125,18 +137,22 @@ while True:
         elif btn < pool_size:
             guess[current_slot] = btn
             current_slot += 1
-            draw_etape_screen(tft, step, 3, guess, last_good, last_wrong, attempts_left, type_colors, pool_size)
+            draw_etape_screen(tft, step, 3, guess, last_feedback, attempts_left, type_colors, pool_size, history)
             print("Étape %d/3 - Slot %d: %s" % (step, current_slot, button_types[btn]))
 
             if current_slot >= SEQ_LEN:
-                good, wrong = mastermind_feedback(secret, guess)
-                last_good, last_wrong = good, wrong
+                feedback_peg = mastermind_feedback_peg(secret, guess)
+                last_feedback = feedback_peg
+                history.append((list(guess), list(feedback_peg)))
+                history = history[-4:]
                 attempts_left -= 1
-                draw_etape_screen(tft, step, 3, guess, good, wrong, attempts_left, type_colors, pool_size)
+                draw_etape_screen(tft, step, 3, guess, feedback_peg, attempts_left, type_colors, pool_size, history)
+                good = sum(1 for f in feedback_peg if f == 2)
+                wrong = sum(1 for f in feedback_peg if f == 1)
                 print("  -> Bien placé: %d, Mal placé: %d | Essais restants: %d" % (good, wrong, attempts_left))
                 time.sleep(0.8)
 
-                if good == SEQ_LEN:
+                if sum(1 for f in feedback_peg if f == 2) == SEQ_LEN:
                     time.sleep(0.5)
                     if step >= 3:
                         phase = "success"
@@ -150,24 +166,26 @@ while True:
                         guess = [None, None, None, None]
                         current_slot = 0
                         attempts_left = MAX_ATTEMPTS
-                        last_good, last_wrong = 0, 0
-                        draw_etape_screen(tft, step, 3, guess, 0, 0, attempts_left, type_colors, pool_size)
+                        last_feedback = [0, 0, 0, 0]
+                        history = []
+                        draw_etape_screen(tft, step, 3, guess, last_feedback, attempts_left, type_colors, pool_size, history)
                         print("Étape %d/3 - Séquences à deviner (pool %d types)." % (step, pool_size))
                 elif attempts_left <= 0:
                     secret = new_secret(pool_size)
                     guess = [None, None, None, None]
                     current_slot = 0
                     attempts_left = MAX_ATTEMPTS
-                    last_good, last_wrong = 0, 0
-                    draw_etape_screen(tft, step, 3, guess, 0, 0, attempts_left, type_colors, pool_size)
+                    last_feedback = [0, 0, 0, 0]
+                    history = []
+                    draw_etape_screen(tft, step, 3, guess, last_feedback, attempts_left, type_colors, pool_size, history)
                     print("Échec étape %d - Nouvelle séquence." % step)
                 else:
                     guess = [None, None, None, None]
                     current_slot = 0
-                    draw_etape_screen(tft, step, 3, guess, 0, 0, attempts_left, type_colors, pool_size)
+                    draw_etape_screen(tft, step, 3, guess, last_feedback, attempts_left, type_colors, pool_size, history)
 
     else:
-        draw_etape_screen(tft, step, 3, guess, last_good, last_wrong, attempts_left, type_colors, pool_size)
+        draw_etape_screen(tft, step, 3, guess, last_feedback, attempts_left, type_colors, pool_size, history)
 
     time.sleep(0.02)
 
