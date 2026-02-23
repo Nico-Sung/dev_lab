@@ -1,9 +1,7 @@
-# Mastermind Plateau Indigo - 3 étapes, piliers, portes de la Ligue
-
 from machine import Pin, SPI
 import time
 import urandom
-from dev_lab.st7735 import ST7735, color565
+from dev_lab.st7735 import ST7735
 from button import poll as poll_buttons, types as button_types
 from servomoteur import set_servo_angle
 from mastermind_ecran import (
