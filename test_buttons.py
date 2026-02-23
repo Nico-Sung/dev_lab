@@ -12,3 +12,4 @@ while True:
     if idx is not None:
         name = button_types[idx] if idx < len(button_types) else "?"
         print("Bouton %2d -> %s" % (idx, name))
+
