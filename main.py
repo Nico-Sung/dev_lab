@@ -71,7 +71,7 @@ visual_frame = 0
 
 set_servo_angle(0)
 draw_idle_screen(tft, 1, 3)
-print("Plateau Indigo - Choisis un type pour commencer. Fee = mode visuel.")
+print("Plateau Indigo - Choisis un type pour commencer. mode visuel = bouton 17.")
 
 while True:
     btn = poll_buttons()
