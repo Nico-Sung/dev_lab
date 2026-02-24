@@ -65,14 +65,13 @@ secret = []
 guess = [None, None, None, None]
 current_slot = 0
 attempts_left = MAX_ATTEMPTS
-last_feedback = [0, 0, 0, 0]  # 0=rouge, 1=jaune, 2=vert par emplacement
-history = []  # liste des (guess, feedback_peg) des derniers essais
+last_feedback = [0, 0, 0, 0]  
+history = [] 
 visual_frame = 0
-long_press_threshold = 1.2 
 
 set_servo_angle(0)
 draw_idle_screen(tft, 1, 3)
-print("Plateau Indigo - Choisis un type pour commencer. Long press Fee = mode visuel.")
+print("Plateau Indigo - Choisis un type pour commencer. Fee = mode visuel.")
 
 while True:
     btn = poll_buttons()
@@ -93,14 +92,9 @@ while True:
         continue
 
     if btn == VISUAL_BUTTON:
-        t0 = now
-        while poll_buttons() == VISUAL_BUTTON and (time.time() - t0) < long_press_threshold:
-            time.sleep(0.05)
-        if time.time() - t0 >= long_press_threshold:
-            phase = "visual"
-            visual_frame = 0
-            print("Mode visuel (déco) activé.")
-            continue
+        phase = "visual"
+        visual_frame = 0
+        print("Mode visuel (déco) activé.")
         time.sleep(0.02)
         continue
 

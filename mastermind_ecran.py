@@ -23,7 +23,7 @@ def draw_background(tft):
 
 
 def draw_pillars(tft, step_done):
-    """
+    """q
     Dessine les 3 piliers du chemin (séquence d'arrivée).
     step_done: 0, 1, 2 ou 3 = nombre d'étapes réussies (piliers allumés).
     """
