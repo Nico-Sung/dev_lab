@@ -11,15 +11,12 @@ L'objectif est de créer un boîtier autonome capable de gérer :
 * **Retour visuel dynamique :** Un écran TFT pour l'affichage de télémétrie, de menus ou d'états système.
 * **Action mécanique :** Un servomoteur intégré permettant un retour physique (type indicateur à aiguille ou verrouillage).
 
-Grâce au **Wi-Fi intégré** du Raspberry Pi Pico W, chaque interaction peut être synchronisée avec un serveur distant via MQTT ou des API HTTP, transformant ce boîtier en un véritable nœud de contrôle IoT.
-
 ---
 
 ## 🛠 Spécifications Techniques
 
 ### 🧠 Cœur & Connectivité
 * **Microcontrôleur :** Raspberry Pi Pico W (RP2040 Dual-core).
-* **Réseau :** Wi-Fi 2.4GHz intégré pour le pilotage à distance.
 
 ### 🖥 Périphériques
 * **Affichage :** LCD TFT 1.44" (Driver `ST7735`, protocole SPI).
