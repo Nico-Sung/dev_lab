@@ -18,15 +18,10 @@ SUCCESS_GOLD = color565(255, 215, 0)
 
 
 def draw_background(tft):
-    """Fond indigo."""
     tft.fill(INDIGO_BG)
 
 
 def draw_pillars(tft, step_done):
-    """q
-    Dessine les 3 piliers du chemin (séquence d'arrivée).
-    step_done: 0, 1, 2 ou 3 = nombre d'étapes réussies (piliers allumés).
-    """
     w, h = 32, 22
     gap = 6
     y = 6
@@ -37,9 +32,6 @@ def draw_pillars(tft, step_done):
 
 
 def draw_door(tft, open_):
-    """
-    Porte de la Ligue : fermée = un bloc ; ouverte = deux battants écartés.
-    """
     door_h = 38
     y = 118
     if open_:
@@ -53,10 +45,6 @@ def draw_door(tft, open_):
 
 
 def draw_guess_slots(tft, guess, type_colors, pool_count):
-    """
-    Affiche les 4 emplacements de la tentative (types ou vides).
-    guess: liste de 4 (type_idx or None)
-    """
     slot_size = 24
     gap = 4
     y = 34
@@ -75,7 +63,6 @@ def draw_guess_slots(tft, guess, type_colors, pool_count):
 
 
 def _feedback_color(fb):
-    """fb: 0=rouge, 1=jaune, 2=vert."""
     if fb == 2:
         return FEEDBACK_GOOD
     if fb == 1:
@@ -83,12 +70,10 @@ def _feedback_color(fb):
     return FEEDBACK_BAD
 
 
-# Historique : 5 essais à gauche, 5 à droite (carrés réduits pour tenir sur les côtés)
 HISTORY_LEFT_ROWS = 5
 HISTORY_RIGHT_ROWS = 5
 
 def _draw_history_column(tft, rows, type_colors, x_start, y_start, row_h, row_margin, box_size, box_gap, dot):
-    """Dessine une colonne d'historique (5 lignes max)."""
     for row_idx, (g, feedback_peg) in enumerate(rows):
         y = y_start + row_idx * (row_h + row_margin)
         for i in range(4):
@@ -110,10 +95,6 @@ def _draw_history_column(tft, rows, type_colors, x_start, y_start, row_h, row_ma
 
 
 def draw_history(tft, history, type_colors):
-    """
-    Affiche 10 essais : 5 à gauche, 5 à droite.
-    Gauche = essais 1 à 5, droite = essais 6 à 10.
-    """
     row_h = 6
     row_margin = 2
     box_size = 5
@@ -131,12 +112,7 @@ def draw_history(tft, history, type_colors):
 
 
 def draw_feedback(tft, feedback_peg):
-    """
-    Indicateurs Mastermind par emplacement : vert = bon, jaune = mal placé, rouge = pas dans la séquence.
-    feedback_peg: liste de 4 (0=rouge, 1=jaune, 2=vert).
-    """
     dot_size = 8
-    # Sous l'historique (5 lignes × (6+2)px de chaque côté → jusqu'à y=102)
     y = 106
     x_start = 28
     gap = 6
@@ -147,10 +123,6 @@ def draw_feedback(tft, feedback_peg):
 
 
 def draw_step_indicator(tft, step, total, attempts_left):
-    """
-    Indicateur d'étape et d'essais (visuel simple : barre ou pastilles).
-    step: 1..total, attempts_left: essais restants.
-    """
     max_attempts = 5
     dot = 4
     y = 30
@@ -164,7 +136,6 @@ def draw_step_indicator(tft, step, total, attempts_left):
 
 
 def draw_etape_screen(tft, step, total, guess, feedback_peg, attempts_left, type_colors, pool_count, history=None):
-    """Écran de jeu : piliers, slots, historique des essais, feedback vert/jaune/rouge, porte fermée."""
     draw_background(tft)
     draw_pillars(tft, step - 1)  
     draw_guess_slots(tft, guess, type_colors, pool_count)
@@ -176,7 +147,6 @@ def draw_etape_screen(tft, step, total, guess, feedback_peg, attempts_left, type
 
 
 def draw_success_screen(tft):
-    """Portes ouvertes, tous les piliers allumés."""
     draw_background(tft)
     draw_pillars(tft, 3)
     draw_door(tft, True)
@@ -185,10 +155,6 @@ def draw_success_screen(tft):
 
 
 def draw_visual_mode(tft, frame, type_colors):
-    """
-    Mode déco : piliers qui s'illuminent en cycle, pas de jeu.
-    frame: numéro d'animation (incrémenté à chaque appel).
-    """
     draw_background(tft)
     pillar_lit = frame % 4
     if pillar_lit < 3:
@@ -199,7 +165,6 @@ def draw_visual_mode(tft, frame, type_colors):
 
 
 def draw_idle_screen(tft, step, total, attempts_left=5):
-    """Écran d'attente : titre / prêt à jouer."""
     draw_background(tft)
     draw_pillars(tft, 0)
     draw_door(tft, False)

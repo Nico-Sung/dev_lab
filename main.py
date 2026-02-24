@@ -28,9 +28,7 @@ SEQ_LEN = 4
 VISUAL_BUTTON = 17 
 
 
-# Feedback par emplacement : 0 = rouge (pas dans la séquence), 1 = jaune (mal placé), 2 = vert (bon emplacement)
 def mastermind_feedback_peg(secret, guess):
-    """Retourne une liste de 4 : 0=rouge, 1=jaune, 2=vert pour chaque position."""
     used_secret = [False] * SEQ_LEN
     used_guess = [False] * SEQ_LEN
     feedback = [0] * SEQ_LEN

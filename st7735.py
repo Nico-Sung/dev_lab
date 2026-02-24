@@ -32,16 +32,16 @@ class ST7735:
         self.cs.value(1)
 
     def _init_display(self):
-        self.write_cmd(0x01)  # reset
+        self.write_cmd(0x01)
         time.sleep_ms(150)
 
-        self.write_cmd(0x11)  # sleep out
+        self.write_cmd(0x11)    
         time.sleep_ms(150)
 
-        self.write_cmd(0x3A)  # color mode
-        self.write_data(bytearray([0x05]))  # 16 bits
+        self.write_cmd(0x3A)
+        self.write_data(bytearray([0x05]))
 
-        self.write_cmd(0x29)  # display on
+        self.write_cmd(0x29)
         time.sleep_ms(50)
 
     def set_window(self, x0, y0, x1, y1):
@@ -62,7 +62,6 @@ class ST7735:
         self.cs.value(1)
 
     def fill_rect(self, x, y, w, h, color):
-        """Dessine un rectangle plein (x, y, largeur w, hauteur h)."""
         if w <= 0 or h <= 0:
             return
         x1 = min(x + w - 1, self.width - 1)
