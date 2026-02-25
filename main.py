@@ -2,7 +2,7 @@ from machine import Pin, SPI
 import time
 import urandom
 from dev_lab.st7735 import ST7735
-from button import poll as poll_buttons, types as button_types
+from button import poll_buttons, types as button_types
 from servomoteur import set_servo_angle
 from mastermind_ecran import (
     draw_etape_screen,
@@ -11,7 +11,7 @@ from mastermind_ecran import (
     draw_idle_screen,
 )
 
-spi = SPI(0, baudrate=20_000_000, polarity=0, phase=0, sck=Pin(18), mosi=Pin(19))
+spi = SPI(0, baudrate=40_000_000, polarity=0, phase=0, sck=Pin(18), mosi=Pin(19))
 tft = ST7735(spi=spi, cs=17, dc=16, rst=20)
 
 type_colors = [
@@ -22,7 +22,12 @@ type_colors = [
     (180, 180, 200), (255, 180, 255),
 ]
 
-POOL_SIZES = (4, 6, 8)
+POOL_BY_STEP = [
+    [0, 1, 2, 3],
+    [4, 5, 6, 7, 8, 9],
+    [10, 11, 12, 13, 14, 15, 16, 17],
+]
+POOL_SIZES = tuple(len(p) for p in POOL_BY_STEP)
 MAX_ATTEMPTS = 10
 SEQ_LEN = 4
 VISUAL_BUTTON = 17 
@@ -47,13 +52,13 @@ def mastermind_feedback_peg(secret, guess):
     return feedback
 
 
-def new_secret(pool_size):
-    indices = list(range(pool_size))
+def new_secret(step):
+    pool = list(POOL_BY_STEP[step - 1])
     result = []
     for _ in range(SEQ_LEN):
-        i = urandom.getrandbits(8) % len(indices)
-        result.append(indices[i])
-        indices.pop(i)
+        i = urandom.getrandbits(8) % len(pool)
+        result.append(pool[i])
+        pool.pop(i)
     return result
 
 
@@ -72,10 +77,10 @@ draw_idle_screen(tft, 1, 3)
 print("Plateau Indigo - Choisis un type pour commencer. mode visuel = bouton 17.")
 
 while True:
-    btn = poll_buttons()
+    btn = poll_buttons(step)
     now = time.time()
 
-    if btn is not None:
+    if btn is not None and btn != VISUAL_BUTTON:
         type_name = button_types[btn] if btn < len(button_types) else "?"
         print("[Bouton %d] %s" % (btn, type_name))
 
@@ -86,14 +91,14 @@ while True:
             phase = "idle"
             draw_idle_screen(tft, 1, 3)
             print("Mode visuel quitté.")
-        time.sleep(0.25)
+        time.sleep(0.08)
         continue
 
     if btn == VISUAL_BUTTON:
         phase = "visual"
         visual_frame = 0
         print("Mode visuel (déco) activé.")
-        time.sleep(0.02)
+        time.sleep(0.01)
         continue
 
     if phase == "success":
@@ -107,11 +112,11 @@ while True:
         continue
 
     if phase == "idle":
-        if btn is not None and btn < POOL_SIZES[0]:
+        if btn is not None and btn in POOL_BY_STEP[0]:
             phase = "play"
             step = 1
             pool_size = POOL_SIZES[step - 1]
-            secret = new_secret(pool_size)
+            secret = new_secret(step)
             guess = [btn, None, None, None]
             current_slot = 1
             attempts_left = MAX_ATTEMPTS
@@ -119,14 +124,14 @@ while True:
             history = []
             draw_etape_screen(tft, step, 3, guess, last_feedback, attempts_left, type_colors, pool_size, history)
             print("Étape 1/3 - Slot 1: %s" % button_types[btn])
-        time.sleep(0.02)
+        time.sleep(0.01)
         continue
 
     pool_size = POOL_SIZES[step - 1]
     if btn is not None:
         if btn == VISUAL_BUTTON:
             pass
-        elif btn < pool_size:
+        elif btn in POOL_BY_STEP[step - 1]:
             guess[current_slot] = btn
             current_slot += 1
             draw_etape_screen(tft, step, 3, guess, last_feedback, attempts_left, type_colors, pool_size, history)
@@ -154,7 +159,7 @@ while True:
                     else:
                         step += 1
                         pool_size = POOL_SIZES[step - 1]
-                        secret = new_secret(pool_size)
+                        secret = new_secret(step)
                         guess = [None, None, None, None]
                         current_slot = 0
                         attempts_left = MAX_ATTEMPTS
@@ -163,7 +168,7 @@ while True:
                         draw_etape_screen(tft, step, 3, guess, last_feedback, attempts_left, type_colors, pool_size, history)
                         print("Étape %d/3 - Séquences à deviner (pool %d types)." % (step, pool_size))
                 elif attempts_left <= 0:
-                    secret = new_secret(pool_size)
+                    secret = new_secret(step)
                     guess = [None, None, None, None]
                     current_slot = 0
                     attempts_left = MAX_ATTEMPTS
@@ -176,8 +181,5 @@ while True:
                     current_slot = 0
                     draw_etape_screen(tft, step, 3, guess, last_feedback, attempts_left, type_colors, pool_size, history)
 
-    else:
-        draw_etape_screen(tft, step, 3, guess, last_feedback, attempts_left, type_colors, pool_size, history)
-
-    time.sleep(0.02)
+    time.sleep(0.01)
 
