@@ -16,6 +16,45 @@ FEEDBACK_BAD = color565(244, 67, 50)
 TITLE = color565(180, 180, 220)
 SUCCESS_GOLD = color565(255, 215, 0)
 
+FONT_5X7 = {
+    " ": (0, 0, 0, 0, 0, 0, 0),
+    "3": (14, 17, 1, 6, 1, 17, 14),
+    "=": (0, 0, 31, 0, 31, 0, 0),
+    "M": (17, 27, 21, 17, 17, 17, 17),
+    "O": (14, 17, 17, 17, 17, 17, 14),
+    "D": (30, 17, 17, 17, 17, 17, 30),
+    "E": (31, 16, 16, 30, 16, 16, 31),
+    "V": (17, 17, 17, 17, 10, 10, 4),
+    "I": (14, 4, 4, 4, 4, 4, 14),
+    "S": (14, 17, 16, 14, 1, 17, 14),
+    "U": (17, 17, 17, 17, 17, 17, 14),
+    "L": (16, 16, 16, 16, 16, 16, 31),
+    "A": (4, 10, 17, 17, 31, 17, 17),
+    "T": (31, 4, 4, 4, 4, 4, 4),
+    "N": (17, 25, 21, 19, 17, 17, 17),
+    "s": (14, 16, 14, 1, 14, 0, 0),
+    "m": (0, 0, 26, 21, 21, 17, 17),
+    "o": (0, 14, 17, 17, 17, 14, 0),
+    "d": (1, 1, 15, 17, 17, 15, 0),
+    "e": (0, 14, 17, 31, 16, 14, 0),
+    "j": (2, 0, 2, 2, 2, 18, 12),
+    "u": (0, 17, 17, 17, 17, 15, 0),
+    "p": (0, 30, 17, 30, 16, 16, 16),
+    "r": (0, 18, 28, 16, 16, 16, 0),
+}
+
+
+def _draw_text(tft, x, y, s, color):
+    cw, ch = 6, 7
+    for i, c in enumerate(s):
+        rows = FONT_5X7.get(c, FONT_5X7[" "])
+        cx = x + i * cw
+        for row in range(7):
+            bits = rows[row]
+            for col in range(5):
+                if (bits >> (4 - col)) & 1:
+                    tft.fill_rect(cx + col, y + row, 1, 1, color)
+
 
 def draw_background(tft):
     tft.fill(INDIGO_BG)
@@ -155,13 +194,9 @@ def draw_success_screen(tft):
 
 
 def draw_visual_mode(tft, frame, type_colors):
-    draw_background(tft)
-    pillar_lit = frame % 4
-    if pillar_lit < 3:
-        draw_pillars(tft, pillar_lit + 1)
-    else:
-        draw_pillars(tft, 3)
-    draw_door(tft, False)
+    tft.fill(INDIGO_BG)
+    _draw_text(tft, 4, 62, "MODE VISUALISATION", TITLE)
+    _draw_text(tft, 4, 72, "3 s = mode jeu", TITLE)
 
 
 def draw_idle_screen(tft, step, total, attempts_left=5):

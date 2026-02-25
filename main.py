@@ -7,9 +7,9 @@ from servomoteur import set_servo_angle
 from mastermind_ecran import (
     draw_etape_screen,
     draw_success_screen,
-    draw_visual_mode,
     draw_idle_screen,
 )
+from visualisation import run_visualisation
 
 spi = SPI(0, baudrate=40_000_000, polarity=0, phase=0, sck=Pin(18), mosi=Pin(19))
 tft = ST7735(spi=spi, cs=17, dc=16, rst=20)
@@ -30,7 +30,7 @@ POOL_BY_STEP = [
 POOL_SIZES = tuple(len(p) for p in POOL_BY_STEP)
 MAX_ATTEMPTS = 10
 SEQ_LEN = 4
-VISUAL_BUTTON = 17 
+VISUALISATION_BUTTON = 18 
 
 
 def mastermind_feedback_peg(secret, guess):
@@ -69,35 +69,25 @@ guess = [None, None, None, None]
 current_slot = 0
 attempts_left = MAX_ATTEMPTS
 last_feedback = [0, 0, 0, 0]  
-history = [] 
-visual_frame = 0
+history = []
 
 set_servo_angle(0)
 draw_idle_screen(tft, 1, 3)
-print("Plateau Indigo - Choisis un type pour commencer. mode visuel = bouton 17.")
+print("Plateau Indigo - Choisis un type pour commencer. Mode visualisation = GPIO 15 (maintenir 3 s).")
 
 while True:
     btn = poll_buttons(step)
     now = time.time()
 
-    if btn is not None and btn != VISUAL_BUTTON:
+    if btn is not None and btn != VISUALISATION_BUTTON:
         type_name = button_types[btn] if btn < len(button_types) else "?"
         print("[Bouton %d] %s" % (btn, type_name))
 
-    if phase == "visual":
-        draw_visual_mode(tft, visual_frame, type_colors)
-        visual_frame += 1
-        if btn == VISUAL_BUTTON:
-            phase = "idle"
-            draw_idle_screen(tft, 1, 3)
-            print("Mode visuel quitté.")
-        time.sleep(0.08)
-        continue
-
-    if btn == VISUAL_BUTTON:
-        phase = "visual"
-        visual_frame = 0
-        print("Mode visuel (déco) activé.")
+    if btn == VISUALISATION_BUTTON:
+        print("Mode visualisation activé (GPIO 15).")
+        run_visualisation(tft, type_colors)
+        draw_idle_screen(tft, 1, 3)
+        print("Mode visualisation quitté.")
         time.sleep(0.01)
         continue
 
@@ -129,7 +119,7 @@ while True:
 
     pool_size = POOL_SIZES[step - 1]
     if btn is not None:
-        if btn == VISUAL_BUTTON:
+        if btn == VISUALISATION_BUTTON:
             pass
         elif btn in POOL_BY_STEP[step - 1]:
             guess[current_slot] = btn

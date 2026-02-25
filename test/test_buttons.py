@@ -24,7 +24,7 @@ def read_key():
 
 step = 1
 print("=== Test des boutons ===")
-print("GPIO 0-7 = types selon l'étape.")
+print("GPIO 0-7 = types. GPIO 15 = mode visualisation (maintenir 3 s).")
 print("Changer d'étape : touches 1, 2 ou 3 du clavier.")
 print("Étape actuelle: %d/3" % step)
 print("-" * 40)
@@ -35,9 +35,13 @@ while True:
         step = int(k)
         print(">>> Étape %d/3" % step)
 
-    type_idx, _ = poll(step)
+    result = poll(step)
+    type_idx = result[0]
+    visualisation_15 = result[1] if len(result) >= 2 else False
     if type_idx is not None:
         name = button_types[type_idx] if type_idx < len(button_types) else "?"
         print("Bouton type %2d -> %s" % (type_idx, name))
+    if visualisation_15:
+        print(">>> Mode visualisation (GPIO 15) OK")
 
     time.sleep(0.02)

@@ -1,7 +1,9 @@
 from machine import Pin
+import time
 
 BTN_GPIO = [0, 1, 2, 3, 4, 5, 6, 7]
-VISUAL_GPIO = 17
+VISUALISATION_GPIO = 15
+VISUALISATION_HOLD_MS = 3000
 
 types = [
     "Normal", "Feu", "Eau", "Plante", "Electrik", "Glace",
@@ -21,9 +23,11 @@ GPIO_TO_TYPE_BY_STEP = [
 ]
 
 buttons = [Pin(p, Pin.IN, Pin.PULL_UP) for p in BTN_GPIO]
-visual_button = Pin(VISUAL_GPIO, Pin.IN, Pin.PULL_UP)
+visualisation_button = Pin(VISUALISATION_GPIO, Pin.IN, Pin.PULL_UP)
 last = [1] * len(BTN_GPIO)
-last_visual = 1
+last_visualisation = 1
+visualisation_hold_start = None
+visualisation_long_triggered = False
 
 
 def _step_to_subindex(step, num_modes):
@@ -39,16 +43,10 @@ def _step_to_subindex(step, num_modes):
     return step - 1
 
 def poll(step=1):
-    """
-    Poll les 8 boutons physiques + bouton visuel.
-    step: 1, 2 ou 3 (étape du mastermind).
-    Retourne (type_index, visual_pressed).
-    type_index = index dans types (0..17) si un bouton type est appuyé, sinon None.
-    visual_pressed = True si le bouton mode visuel (GPIO 17) vient d'être appuyé.
-    """
-    global last, last_visual
+    global last, last_visualisation, visualisation_hold_start, visualisation_long_triggered
     type_index = None
-    visual_pressed = False
+    visualisation_pressed = False
+    now_ms = time.ticks_ms()
 
     for i, b in enumerate(buttons):
         v = b.value()
@@ -58,20 +56,25 @@ def poll(step=1):
             type_index = GPIO_TO_TYPE_BY_STEP[i][sub]
         last[i] = v
 
-    vv = visual_button.value()
-    if last_visual == 1 and vv == 0:
-        visual_pressed = True
-    last_visual = vv
+    vv15 = visualisation_button.value()
+    if vv15 == 0:
+        if last_visualisation == 1:
+            visualisation_hold_start = now_ms
+            visualisation_long_triggered = False
+        elif visualisation_hold_start is not None and not visualisation_long_triggered:
+            if time.ticks_diff(now_ms, visualisation_hold_start) >= VISUALISATION_HOLD_MS:
+                visualisation_pressed = True
+                visualisation_long_triggered = True
+    else:
+        visualisation_hold_start = None
+        visualisation_long_triggered = False
+    last_visualisation = vv15
 
-    return type_index, visual_pressed
+    return type_index, visualisation_pressed
 
 
 def poll_buttons(step=1):
-    """
-    Retourne l'index de type (0-16) si un bouton type est pressé, 17 si bouton visuel (GPIO 17), sinon None.
-    step: 1, 2 ou 3 pour le mapping physique -> type.
-    """
-    type_index, visual_pressed = poll(step)
-    if visual_pressed:
-        return 17 
+    type_index, visualisation_pressed = poll(step)
+    if visualisation_pressed:
+        return 18
     return type_index
