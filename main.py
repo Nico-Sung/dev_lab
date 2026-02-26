@@ -1,7 +1,7 @@
 from machine import Pin, SPI
 import time
 import urandom
-from dev_lab.st7735 import ST7735
+from st7735 import ST7735
 from button import poll_buttons, types as button_types
 from servomoteur import set_servo_angle
 from mastermind_ecran import (
@@ -72,8 +72,8 @@ last_feedback = [0, 0, 0, 0]
 history = []
 
 set_servo_angle(0)
-draw_idle_screen(tft, 1, 3)
-print("Plateau Indigo - Choisis un type pour commencer. Mode visualisation = GPIO 15 (maintenir 3 s).")
+draw_idle_screen(tft, 1, 3, MAX_ATTEMPTS)
+print("Plateau Indigo - Choisis un type pour commencer. Mode visualisation = GPIO 15.")
 
 while True:
     btn = poll_buttons(step)
@@ -86,7 +86,7 @@ while True:
     if btn == VISUALISATION_BUTTON:
         print("Mode visualisation activé (GPIO 15).")
         run_visualisation(tft, type_colors)
-        draw_idle_screen(tft, 1, 3)
+        draw_idle_screen(tft, 1, 3, MAX_ATTEMPTS)
         print("Mode visualisation quitté.")
         time.sleep(0.01)
         continue
@@ -96,7 +96,7 @@ while True:
             phase = "idle"
             step = 1
             set_servo_angle(0)
-            draw_idle_screen(tft, 1, 3)
+            draw_idle_screen(tft, 1, 3, MAX_ATTEMPTS)
             print("Nouvelle partie.")
         time.sleep(0.1)
         continue
@@ -136,7 +136,8 @@ while True:
                 draw_etape_screen(tft, step, 3, guess, feedback_peg, attempts_left, type_colors, pool_size, history)
                 good = sum(1 for f in feedback_peg if f == 2)
                 wrong = sum(1 for f in feedback_peg if f == 1)
-                print("  -> Bien placé: %d, Mal placé: %d | Essais restants: %d" % (good, wrong, attempts_left))
+                bad = sum(1 for f in feedback_peg if f == 0)
+                print("  -> Bien placé: %d, Mal placé: %d, Pas dans le niveau: %d | Essais restants: %d" % (good, wrong, bad, attempts_left))
                 time.sleep(0.8)
 
                 if sum(1 for f in feedback_peg if f == 2) == SEQ_LEN:
@@ -172,4 +173,5 @@ while True:
                     draw_etape_screen(tft, step, 3, guess, last_feedback, attempts_left, type_colors, pool_size, history)
 
     time.sleep(0.01)
+
 
