@@ -34,7 +34,7 @@ L'objectif est de créer un boîtier autonome capable de gérer :
 | **Écran (SCL/SDA)** | GP18 / GP19 | Bus SPI |
 | **Écran (DC/RES/CS)**| GP17 / GP20 / GP16 | Signal de contrôle |
 | **Servomoteur** | GP15 | Signal PWM |
-| **Boutons** | GP0 à GP14 + GP21/22/26 | Entrées Digitales |
+| **Boutons** | GP0 à GP7 + GP15 | Entrées Digitales |
 
 ---
 
