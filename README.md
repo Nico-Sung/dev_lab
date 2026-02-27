@@ -69,8 +69,8 @@ Le but : deviner une séquence de 4 types Pokémon sur 3 niveaux de difficulté.
 
 - **Écran d’accueil** : affiche les emplacements vides, les piliers de la Ligue et le texte « vies restantes = 10 ».
 - **Écran de niveau** :
-    - en haut : piliers allumés selon le niveau,
-    - au centre : 4 cases pour la combinaison en cours,
+    - en haut : piliers allumés selon le niveau, en bas les types choisis de l'essai,
+    - au centre : l'historique des essais de la sequence, en bas 4 cases qui dit bon (vert), pas bon (orange) , pas dans le sequence (rouge) du dernier essai,
     - en bas : feedback du dernier essai + « vies restantes = X ».
 - **Mode visualisation** :
     - activé / désactivé par un maintien de **3 s** sur le bouton GPIO 15,
