@@ -1,19 +1,19 @@
 from machine import Pin, PWM
 import time
 
-PIN_SERVO = 14           
+PIN_SERVO = 14
+MIN_DUTY = 1638  
+MAX_DUTY = 8192 
 
 servo = PWM(Pin(PIN_SERVO))
+servo.duty_u16(MIN_DUTY)
 servo.freq(50)
+
 
 def set_servo_angle(angle):
     if angle < 0: angle = 0
     if angle > 180: angle = 180
-
-    min_duty = 1638 
-    max_duty = 8192
-    
-    duty = int(min_duty + (angle / 180) * (max_duty - min_duty))
+    duty = int(MIN_DUTY + (angle / 180) * (MAX_DUTY - MIN_DUTY))
     servo.duty_u16(duty)
 
 if __name__ == "__main__":

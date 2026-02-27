@@ -223,6 +223,12 @@ def draw_visual_mode(tft, frame, type_colors):
     _draw_text(tft, 4, 72, "3 s = mode jeu", TITLE)
 
 
+def draw_visual_mode_door_open(tft, type_colors):
+    tft.fill(INDIGO_BG)
+    _draw_text(tft, 4, 62, "MODE VISUALISATION", TITLE)
+    _draw_text(tft, 4, 72, "porte ouverte", TITLE)
+
+
 def draw_idle_screen(tft, step, total, attempts_left=10):
     draw_background(tft)
     draw_pillars(tft, 0)
