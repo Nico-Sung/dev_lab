@@ -120,7 +120,7 @@ attempts_left = MAX_ATTEMPTS
 last_feedback = [0, 0, 0, 0]  
 history = []
 
-set_servo_angle(90)
+set_servo_angle(0)  
 update_brightness_for_step(step)  
 draw_idle_screen(tft, 1, 3, MAX_ATTEMPTS)
 print("Plateau Indigo - Choisis un type pour commencer. Mode visualisation = GPIO 15.")
@@ -129,7 +129,7 @@ while True:
     cmd = check_console_command()
     if cmd == "win":
         phase = "success"
-        set_servo_angle(180)
+        set_servo_angle(90)
         set_filament_percent(100)
         draw_success_screen(tft)
         print("Ligue ouverte ! (commande win)")
@@ -171,7 +171,7 @@ while True:
         if btn is not None:
             phase = "idle"
             step = 1
-            set_servo_angle(90)
+            set_servo_angle(0)  
             update_brightness_for_step(step)
             draw_idle_screen(tft, 1, 3, MAX_ATTEMPTS)
             print("Nouvelle partie.")
@@ -222,7 +222,7 @@ while True:
                     time.sleep(0.5)
                     if step >= 3:
                         phase = "success"
-                        set_servo_angle(180)
+                        set_servo_angle(90)
                         set_filament_percent(100)  
                         draw_success_screen(tft)
                         print("Ligue ouverte ! Récompense.")
@@ -256,6 +256,7 @@ while True:
                     draw_etape_screen(tft, step, 3, guess, last_feedback, attempts_left, type_colors, pool_size, history)
 
     time.sleep(0.01)
+
 
 
 
