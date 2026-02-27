@@ -1,9 +1,11 @@
 from machine import Pin, SPI
 import time
 import urandom
+import sys
 from st7735 import ST7735
 from button import poll_buttons, types as button_types
 from servomoteur import set_servo_angle
+from leds import set_filament_percent
 from mastermind_ecran import (
     draw_etape_screen,
     draw_success_screen,
@@ -62,6 +64,53 @@ def new_secret(step):
     return result
 
 
+def _read_console_char():
+    try:
+        import uselect
+        poll_in = uselect.poll()
+        poll_in.register(sys.stdin, uselect.POLLIN)
+        if poll_in.poll(0):
+            return sys.stdin.read(1)
+    except (ImportError, OSError):
+        pass
+    try:
+        import select
+        if select.select([sys.stdin], [], [], 0)[0]:
+            return sys.stdin.read(1)
+    except (ImportError, OSError):
+        pass
+    return None
+
+
+_console_buffer = ""
+
+
+def check_console_command():
+    global _console_buffer
+    c = _read_console_char()
+    if c is None:
+        return None
+    if c in "\n\r":
+        line = _console_buffer.strip().lower()
+        _console_buffer = ""
+        if line in ("win", "1", "2", "3"):
+            return line
+        return None
+    _console_buffer += c
+    if len(_console_buffer) > 20:
+        _console_buffer = ""
+    return None
+
+
+def update_brightness_for_step(step):
+    if step <= 1:
+        set_filament_percent(25)
+    elif step == 2:
+        set_filament_percent(50)
+    else:
+        set_filament_percent(75)
+
+
 phase = "idle"  
 step = 1
 secret = []
@@ -71,11 +120,37 @@ attempts_left = MAX_ATTEMPTS
 last_feedback = [0, 0, 0, 0]  
 history = []
 
-set_servo_angle(0)
+set_servo_angle(90)
+update_brightness_for_step(step)  
 draw_idle_screen(tft, 1, 3, MAX_ATTEMPTS)
 print("Plateau Indigo - Choisis un type pour commencer. Mode visualisation = GPIO 15.")
 
 while True:
+    cmd = check_console_command()
+    if cmd == "win":
+        phase = "success"
+        set_servo_angle(180)
+        set_filament_percent(100)
+        draw_success_screen(tft)
+        print("Ligue ouverte ! (commande win)")
+        time.sleep(0.1)
+        continue
+    elif cmd in ("1", "2", "3"):
+        step = int(cmd)
+        phase = "play"
+        update_brightness_for_step(step)
+        pool_size = POOL_SIZES[step - 1]
+        secret = new_secret(step)
+        guess = [None, None, None, None]
+        current_slot = 0
+        attempts_left = MAX_ATTEMPTS
+        last_feedback = [0, 0, 0, 0]
+        history = []
+        draw_etape_screen(tft, step, 3, guess, last_feedback, attempts_left, type_colors, pool_size, history)
+        print("Passage direct au niveau %d/3 via la console." % step)
+        time.sleep(0.1)
+        continue
+
     btn = poll_buttons(step)
     now = time.time()
 
@@ -86,6 +161,7 @@ while True:
     if btn == VISUALISATION_BUTTON:
         print("Mode visualisation activé (GPIO 15).")
         run_visualisation(tft, type_colors)
+        update_brightness_for_step(step) 
         draw_idle_screen(tft, 1, 3, MAX_ATTEMPTS)
         print("Mode visualisation quitté.")
         time.sleep(0.01)
@@ -95,7 +171,8 @@ while True:
         if btn is not None:
             phase = "idle"
             step = 1
-            set_servo_angle(0)
+            set_servo_angle(90)
+            update_brightness_for_step(step)
             draw_idle_screen(tft, 1, 3, MAX_ATTEMPTS)
             print("Nouvelle partie.")
         time.sleep(0.1)
@@ -105,6 +182,7 @@ while True:
         if btn is not None and btn in POOL_BY_STEP[0]:
             phase = "play"
             step = 1
+            update_brightness_for_step(step) 
             pool_size = POOL_SIZES[step - 1]
             secret = new_secret(step)
             guess = [btn, None, None, None]
@@ -145,10 +223,15 @@ while True:
                     if step >= 3:
                         phase = "success"
                         set_servo_angle(180)
+                        set_filament_percent(100)  
                         draw_success_screen(tft)
                         print("Ligue ouverte ! Récompense.")
                     else:
                         step += 1
+                        if step == 2:
+                            set_filament_percent(50)  
+                        elif step == 3:
+                            set_filament_percent(75)  
                         pool_size = POOL_SIZES[step - 1]
                         secret = new_secret(step)
                         guess = [None, None, None, None]
@@ -173,5 +256,6 @@ while True:
                     draw_etape_screen(tft, step, 3, guess, last_feedback, attempts_left, type_colors, pool_size, history)
 
     time.sleep(0.01)
+
 
 

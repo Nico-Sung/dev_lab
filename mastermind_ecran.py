@@ -1,5 +1,3 @@
-# Écran Mastermind - Plateau Indigo / Porte de la Ligue Pokémon
-
 from st7735 import color565
 
 
@@ -32,6 +30,7 @@ FONT_5X7 = {
     "A": (4, 10, 17, 17, 31, 17, 17),
     "T": (31, 4, 4, 4, 4, 4, 4),
     "N": (17, 25, 21, 19, 17, 17, 17),
+    "R": (30, 17, 17, 30, 18, 17, 17),
     "s": (14, 16, 14, 1, 14, 0, 0),
     "m": (0, 0, 26, 21, 21, 17, 17),
     "o": (0, 14, 17, 17, 17, 14, 0),
@@ -55,19 +54,21 @@ FONT_5X7 = {
     "7": (31, 1, 2, 4, 4, 4, 4),
     "8": (14, 17, 17, 14, 17, 17, 14),
     "9": (14, 17, 17, 15, 1, 17, 14),
+    "C": (14, 16, 16, 16, 16, 16, 14),
+    "!": (4, 4, 4, 4, 4, 0, 4),
 }
 
 
-def _draw_text(tft, x, y, s, color):
+def _draw_text(tft, x, y, s, color, scale=1):
     cw, ch = 6, 7
     for i, c in enumerate(s):
         rows = FONT_5X7.get(c, FONT_5X7[" "])
-        cx = x + i * cw
+        cx = x + i * (cw * scale)
         for row in range(min(7, len(rows))):
             bits = rows[row]
             for col in range(5):
                 if (bits >> (4 - col)) & 1:
-                    tft.fill_rect(cx + 1 + col, y + row, 1, 1, color)
+                    tft.fill_rect(cx + (1 + col) * scale, y + row * scale, scale, scale, color)
 
 
 def draw_background(tft):
@@ -213,8 +214,7 @@ def draw_success_screen(tft):
     draw_background(tft)
     draw_pillars(tft, 3)
     draw_door(tft, True)
-    tft.fill_rect(10, 78, 108, 28, SUCCESS_GOLD)
-    tft.fill_rect(14, 82, 100, 20, INDIGO_BG)
+    _draw_text(tft, 4, 76, "VICTOIRE !", SUCCESS_GOLD, scale=2)
 
 
 def draw_visual_mode(tft, frame, type_colors):

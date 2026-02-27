@@ -1,7 +1,7 @@
 from machine import Pin, PWM
 import time
 
-PIN_SERVO = 28           
+PIN_SERVO = 14           
 
 servo = PWM(Pin(PIN_SERVO))
 servo.freq(50)

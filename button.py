@@ -31,11 +31,6 @@ visualisation_long_triggered = False
 
 
 def _step_to_subindex(step, num_modes):
-    """Indice dans la liste des types du bouton selon l'étape.
-    - 3 modes (GPIO 0-3) : étape 1 -> 0, 2 -> 1, 3 -> 2
-    - 2 modes (GPIO 4-5) : étape 1 et 2 -> 0 (Sol/Vol), étape 3 -> 1 (Dragon/Ténèbres)
-    - 1 mode (GPIO 6-7) : toujours 0
-    """
     if num_modes == 1:
         return 0
     if num_modes == 2:
