@@ -3,7 +3,7 @@ from machine import Pin
 from button import poll_buttons
 from mastermind_ecran import draw_visual_mode, draw_visual_mode_door_open
 from leds import update_filament, filament_off
-from servomoteur import set_servo_angle
+from servomoteur import set_servo_angle, is_door_open, DOOR_OPEN_ANGLE
 
 VISUALISATION_BUTTON = 18
 SECRET_GPIO = 0
@@ -18,10 +18,13 @@ door_open = False
 
 def run_visualisation(tft, type_colors):
     global secret_last, secret_hold_start, secret_triggered, door_open
-    draw_visual_mode(tft, 0, type_colors)
+    door_open = is_door_open()
+    if door_open:
+        draw_visual_mode_door_open(tft, type_colors)
+    else:
+        draw_visual_mode(tft, 0, type_colors)
     secret_hold_start = None
     secret_triggered = False
-    door_open = False
     secret_last = 1
     while True:
         update_filament()
@@ -41,7 +44,7 @@ def run_visualisation(tft, type_colors):
                         door_open = False
                         draw_visual_mode(tft, 0, type_colors)
                     else:
-                        set_servo_angle(180)
+                        set_servo_angle(DOOR_OPEN_ANGLE)
                         door_open = True
                         draw_visual_mode_door_open(tft, type_colors)
                     secret_triggered = True

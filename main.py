@@ -2,9 +2,9 @@ from machine import Pin, SPI
 import time
 import urandom
 import sys
-from st7735 import ST7735
+from ili9341 import ILI9341
 from button import poll_buttons, types as button_types
-from servomoteur import set_servo_angle
+from servomoteur import set_servo_angle, DOOR_OPEN_ANGLE
 from leds import set_filament_percent
 from mastermind_ecran import (
     draw_etape_screen,
@@ -13,8 +13,8 @@ from mastermind_ecran import (
 )
 from visualisation import run_visualisation
 
-spi = SPI(0, baudrate=40_000_000, polarity=0, phase=0, sck=Pin(18), mosi=Pin(19))
-tft = ST7735(spi=spi, cs=17, dc=16, rst=20)
+spi = SPI(0, baudrate=20_000_000, polarity=0, phase=0, sck=Pin(18), mosi=Pin(19))
+tft = ILI9341(spi=spi, cs=16, dc=21, rst=20)
 
 type_colors = [
     (255, 255, 255), (255, 80, 0), (0, 120, 255), (0, 200, 80),
@@ -30,7 +30,7 @@ POOL_BY_STEP = [
     [10, 11, 12, 13, 14, 15, 16, 17],
 ]
 POOL_SIZES = tuple(len(p) for p in POOL_BY_STEP)
-MAX_ATTEMPTS = 10
+MAX_ATTEMPTS = 8
 SEQ_LEN = 4
 VISUALISATION_BUTTON = 18 
 
@@ -93,7 +93,7 @@ def check_console_command():
     if c in "\n\r":
         line = _console_buffer.strip().lower()
         _console_buffer = ""
-        if line in ("win", "1", "2", "3"):
+        if line in ("win", "1", "2", "3", "demo"):
             return line
         return None
     _console_buffer += c
@@ -129,10 +129,25 @@ while True:
     cmd = check_console_command()
     if cmd == "win":
         phase = "success"
-        set_servo_angle(90)
+        set_servo_angle(DOOR_OPEN_ANGLE)
         set_filament_percent(100)
         draw_success_screen(tft)
         print("Ligue ouverte ! (commande win)")
+        time.sleep(0.1)
+        continue
+    elif cmd == "demo":
+        fake_history = [
+            ([0, 1, 2, 3], [2, 0, 1, 0]),
+            ([1, 3, 0, 2], [0, 1, 2, 1]),
+            ([2, 0, 3, 1], [1, 2, 0, 2]),
+            ([3, 2, 1, 0], [2, 1, 1, 0]),
+            ([0, 2, 1, 3], [0, 2, 2, 1]),
+            ([1, 0, 3, 2], [1, 0, 2, 2]),
+        ]
+        fake_guess = [0, 3, None, None]
+        fake_feedback = [2, 1, 0, 0]
+        draw_etape_screen(tft, 2, 3, fake_guess, fake_feedback, 4, type_colors, 6, fake_history)
+        print("Demo UI avec historique.")
         time.sleep(0.1)
         continue
     elif cmd in ("1", "2", "3"):
@@ -222,7 +237,7 @@ while True:
                     time.sleep(0.5)
                     if step >= 3:
                         phase = "success"
-                        set_servo_angle(90)
+                        set_servo_angle(DOOR_OPEN_ANGLE)
                         set_filament_percent(100)  
                         draw_success_screen(tft)
                         print("Ligue ouverte ! Récompense.")
@@ -256,7 +271,4 @@ while True:
                     draw_etape_screen(tft, step, 3, guess, last_feedback, attempts_left, type_colors, pool_size, history)
 
     time.sleep(0.01)
-
-
-
 

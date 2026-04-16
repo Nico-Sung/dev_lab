@@ -4,17 +4,25 @@ import time
 PIN_SERVO = 14
 MIN_DUTY = 1638  
 MAX_DUTY = 8192 
+DOOR_OPEN_ANGLE = 90
 
 servo = PWM(Pin(PIN_SERVO))
 servo.duty_u16(MIN_DUTY)
 servo.freq(50)
+_current_angle = 0
 
 
 def set_servo_angle(angle):
+    global _current_angle
     if angle < 0: angle = 0
     if angle > 180: angle = 180
     duty = int(MIN_DUTY + (angle / 180) * (MAX_DUTY - MIN_DUTY))
     servo.duty_u16(duty)
+    _current_angle = angle
+
+
+def is_door_open():
+    return _current_angle >= DOOR_OPEN_ANGLE
 
 if __name__ == "__main__":
     print("=== TEST SERVO STANDARD (0-180°) ===")
