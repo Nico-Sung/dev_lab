@@ -16,10 +16,10 @@ GPIO_TO_TYPE_BY_STEP = [
     [1, 5, 11],   # GPIO 1: Feu, Glace, Insecte
     [2, 6, 12],   # GPIO 2: Eau, Combat, Roche
     [3, 7, 13],   # GPIO 3: Plante, Poison, Spectre
-    [8, 14],      # GPIO 4: Sol, Dragon — 2 modes
-    [9, 15],      # GPIO 5: Vol, Tenebres — 2 modes
-    [16],         # GPIO 6: Acier — 1 mode
-    [17],         # GPIO 7: Fee — 1 mode
+    [8, 14],      # GPIO 4: Sol, Dragon
+    [9, 15],      # GPIO 5: Vol, Tenebres
+    [16],         # GPIO 6: Acier
+    [17],         # GPIO 7: Fee
 ]
 
 buttons = [Pin(p, Pin.IN, Pin.PULL_UP) for p in BTN_GPIO]
@@ -33,9 +33,7 @@ visualisation_long_triggered = False
 def _step_to_subindex(step, num_modes):
     if num_modes == 1:
         return 0
-    if num_modes == 2:
-        return 0 if step <= 2 else 1
-    return step - 1
+    return min(step - 1, num_modes - 1)
 
 def poll(step=1):
     global last, last_visualisation, visualisation_hold_start, visualisation_long_triggered

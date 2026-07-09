@@ -30,6 +30,7 @@ POOL_BY_STEP = [
     [10, 11, 12, 13, 14, 15, 16, 17],
 ]
 POOL_SIZES = tuple(len(p) for p in POOL_BY_STEP)
+TOTAL_STEPS = len(POOL_BY_STEP)
 MAX_ATTEMPTS = 8
 SEQ_LEN = 4
 VISUALISATION_BUTTON = 18 
@@ -122,7 +123,7 @@ history = []
 
 set_servo_angle(0)  
 update_brightness_for_step(step)  
-draw_idle_screen(tft, 1, 3, MAX_ATTEMPTS)
+draw_idle_screen(tft, 1, TOTAL_STEPS, MAX_ATTEMPTS)
 print("Plateau Indigo - Choisis un type pour commencer. Mode visualisation = GPIO 15.")
 
 while True:
@@ -146,7 +147,7 @@ while True:
         ]
         fake_guess = [0, 3, None, None]
         fake_feedback = [2, 1, 0, 0]
-        draw_etape_screen(tft, 2, 3, fake_guess, fake_feedback, 4, type_colors, 6, fake_history)
+        draw_etape_screen(tft, 2, TOTAL_STEPS, fake_guess, fake_feedback, 4, type_colors, 6, fake_history)
         print("Demo UI avec historique.")
         time.sleep(0.1)
         continue
@@ -161,8 +162,8 @@ while True:
         attempts_left = MAX_ATTEMPTS
         last_feedback = [0, 0, 0, 0]
         history = []
-        draw_etape_screen(tft, step, 3, guess, last_feedback, attempts_left, type_colors, pool_size, history)
-        print("Passage direct au niveau %d/3 via la console." % step)
+        draw_etape_screen(tft, step, TOTAL_STEPS, guess, last_feedback, attempts_left, type_colors, pool_size, history)
+        print("Passage direct au niveau %d/%d via la console." % (step, TOTAL_STEPS))
         time.sleep(0.1)
         continue
 
@@ -177,7 +178,7 @@ while True:
         print("Mode visualisation activé (GPIO 15).")
         run_visualisation(tft, type_colors)
         update_brightness_for_step(step) 
-        draw_idle_screen(tft, 1, 3, MAX_ATTEMPTS)
+        draw_idle_screen(tft, 1, TOTAL_STEPS, MAX_ATTEMPTS)
         print("Mode visualisation quitté.")
         time.sleep(0.01)
         continue
@@ -188,7 +189,7 @@ while True:
             step = 1
             set_servo_angle(0)  
             update_brightness_for_step(step)
-            draw_idle_screen(tft, 1, 3, MAX_ATTEMPTS)
+            draw_idle_screen(tft, 1, TOTAL_STEPS, MAX_ATTEMPTS)
             print("Nouvelle partie.")
         time.sleep(0.1)
         continue
@@ -205,8 +206,8 @@ while True:
             attempts_left = MAX_ATTEMPTS
             last_feedback = [0, 0, 0, 0]
             history = []
-            draw_etape_screen(tft, step, 3, guess, last_feedback, attempts_left, type_colors, pool_size, history)
-            print("Étape 1/3 - Slot 1: %s" % button_types[btn])
+            draw_etape_screen(tft, step, TOTAL_STEPS, guess, last_feedback, attempts_left, type_colors, pool_size, history)
+            print("Étape 1/%d - Slot 1: %s" % (TOTAL_STEPS, button_types[btn]))
         time.sleep(0.01)
         continue
 
@@ -217,8 +218,8 @@ while True:
         elif btn in POOL_BY_STEP[step - 1]:
             guess[current_slot] = btn
             current_slot += 1
-            draw_etape_screen(tft, step, 3, guess, last_feedback, attempts_left, type_colors, pool_size, history)
-            print("Étape %d/3 - Slot %d: %s" % (step, current_slot, button_types[btn]))
+            draw_etape_screen(tft, step, TOTAL_STEPS, guess, last_feedback, attempts_left, type_colors, pool_size, history)
+            print("Étape %d/%d - Slot %d: %s" % (step, TOTAL_STEPS, current_slot, button_types[btn]))
 
             if current_slot >= SEQ_LEN:
                 feedback_peg = mastermind_feedback_peg(secret, guess)
@@ -226,7 +227,7 @@ while True:
                 history.append((list(guess), list(feedback_peg)))
                 history = history[-4:]
                 attempts_left -= 1
-                draw_etape_screen(tft, step, 3, guess, feedback_peg, attempts_left, type_colors, pool_size, history)
+                draw_etape_screen(tft, step, TOTAL_STEPS, guess, feedback_peg, attempts_left, type_colors, pool_size, history)
                 good = sum(1 for f in feedback_peg if f == 2)
                 wrong = sum(1 for f in feedback_peg if f == 1)
                 bad = sum(1 for f in feedback_peg if f == 0)
@@ -235,7 +236,7 @@ while True:
 
                 if sum(1 for f in feedback_peg if f == 2) == SEQ_LEN:
                     time.sleep(0.5)
-                    if step >= 3:
+                    if step >= TOTAL_STEPS:
                         phase = "success"
                         set_servo_angle(DOOR_OPEN_ANGLE)
                         set_filament_percent(100)  
@@ -243,10 +244,7 @@ while True:
                         print("Ligue ouverte ! Récompense.")
                     else:
                         step += 1
-                        if step == 2:
-                            set_filament_percent(50)  
-                        elif step == 3:
-                            set_filament_percent(75)  
+                        update_brightness_for_step(step)
                         pool_size = POOL_SIZES[step - 1]
                         secret = new_secret(step)
                         guess = [None, None, None, None]
@@ -254,8 +252,8 @@ while True:
                         attempts_left = MAX_ATTEMPTS
                         last_feedback = [0, 0, 0, 0]
                         history = []
-                        draw_etape_screen(tft, step, 3, guess, last_feedback, attempts_left, type_colors, pool_size, history)
-                        print("Étape %d/3 - Séquences à deviner (pool %d types)." % (step, pool_size))
+                        draw_etape_screen(tft, step, TOTAL_STEPS, guess, last_feedback, attempts_left, type_colors, pool_size, history)
+                        print("Étape %d/%d - Séquences à deviner (pool %d types)." % (step, TOTAL_STEPS, pool_size))
                 elif attempts_left <= 0:
                     secret = new_secret(step)
                     guess = [None, None, None, None]
@@ -263,12 +261,12 @@ while True:
                     attempts_left = MAX_ATTEMPTS
                     last_feedback = [0, 0, 0, 0]
                     history = []
-                    draw_etape_screen(tft, step, 3, guess, last_feedback, attempts_left, type_colors, pool_size, history)
+                    draw_etape_screen(tft, step, TOTAL_STEPS, guess, last_feedback, attempts_left, type_colors, pool_size, history)
                     print("Échec étape %d - Nouvelle séquence." % step)
                 else:
                     guess = [None, None, None, None]
                     current_slot = 0
-                    draw_etape_screen(tft, step, 3, guess, last_feedback, attempts_left, type_colors, pool_size, history)
+                    draw_etape_screen(tft, step, TOTAL_STEPS, guess, last_feedback, attempts_left, type_colors, pool_size, history)
 
     time.sleep(0.01)
 

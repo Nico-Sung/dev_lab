@@ -172,7 +172,7 @@ def draw_pillars(tft, step_done):
     gap = 6
     y = 44
     for i in range(3):
-        x = 30 + i * (w + gap)
+        x = 36 + i * (w + gap)
         color = PILLAR_ON if i < step_done else PILLAR_OFF
         tft.fill_rect(x, y, w, h, color)
         _draw_text(tft, x + 7, y + 1, str(i + 1), POKE_DARK)
